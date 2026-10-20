@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<!-- 通信先を自分のサイトと Google ドライブ（共有のファイルの確認・取得）だけに限定する -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self' https://www.googleapis.com; manifest-src 'self'; worker-src 'self'; base-uri 'self'; form-action 'none'">
+<!-- 送るのはサイト名（https://kuveratux.github.io/）だけ。API キーのウェブサイト制限の判定に必要 -->
+<meta name="referrer" content="strict-origin">
+<meta name="theme-color" content="#050912">
+<meta name="color-scheme" content="dark">
+<title>EV Invite</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/icon-180.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="EV Invite">
+<link rel="stylesheet" href="style.css">
+<script src="app-config.js"></script>
+</head>
+<body class="invite-app">
+<div class="topbar">
+<header class="bar">
+  <div class="title"><img class="bar-icon" src="icons/bar-icon.png" alt=""><h1>EARN VIEWER INVITE</h1></div>
+  <span id="status" class="status"></span>
+</header>
+</div>
+
+<main>
+  <!-- 鍵：初めて使うときは管理用パスワードを決める。次からは入れて開く -->
+  <section id="lockView" hidden>
+    <div id="setupBox" class="card" hidden>
+      <h2>管理用パスワードを決める</h2>
+      <p class="muted">招待する人の合言葉は、このパスワードで暗号化して、この端末の中だけに保存します。開くたびにこのパスワードを入れます。</p>
+      <div class="note">このパスワードを忘れると、保存した合言葉は取り出せません（そのときは全部消して作り直します。合言葉そのものは PC 側に残っています）。</div>
+      <label class="field">管理用パスワード（8文字以上）<input id="setupPass1" type="password" autocomplete="new-password" spellcheck="false"></label>
+      <label class="field">もう一度<input id="setupPass2" type="password" autocomplete="new-password" spellcheck="false"></label>
+      <div class="row"><button id="setupBtn" type="button" class="primary">決める</button></div>
+    </div>
+    <div id="unlockBox" class="card" hidden>
+      <h2>管理用パスワードを入れてください</h2>
+      <label class="field">管理用パスワード<input id="unlockPass" type="password" autocomplete="current-password" spellcheck="false"></label>
+      <p id="unlockMsg" class="muted"></p>
+      <div class="row"><button id="unlockBtn" type="button" class="primary">開く</button></div>
+      <details class="fold forgot">
+        <summary>パスワードを忘れたとき</summary>
+        <div class="fold-body">
+          <p class="muted">保存した招待と合言葉を、この端末から全部消して、最初からやり直します。ドライブの共有や、招待した人の端末には影響しません。</p>
+          <div class="row"><button id="resetBtn" type="button">全部消してやり直す</button></div>
+        </div>
+      </details>
+    </div>
+  </section>
+
+  <section id="mainView" hidden>
+    <!-- 招待を作る -->
+    <div class="card">
+      <h2>招待を作る</h2>
+      <ol class="muted steps">
+        <li>ドライブで、その人のデータのファイル（ev_…_latest.json）の共有を「リンクを知っている全員」（閲覧者）にして、［リンクをコピー］します。</li>
+        <li>下にリンクと合言葉を入れて［点検して保存］を押します。合言葉でファイルを開けるかを確かめます。</li>
+      </ol>
+      <label class="field">共有のリンク<input id="newSrc" autocomplete="off" spellcheck="false" autocapitalize="off" placeholder="https://drive.google.com/file/d/…"></label>
+      <label class="field">合言葉<input id="newPass" type="password" autocomplete="off" spellcheck="false" autocapitalize="off"></label>
+      <label class="check"><input id="newPassShow" type="checkbox"> 合言葉を表示する</label>
+      <label class="field">名前（この端末の中だけ。空欄ならファイル名）<input id="newName" maxlength="40" autocomplete="off"></label>
+      <p id="newMsg" class="muted"></p>
+      <div class="row"><button id="newBtn" type="button" class="primary">点検して保存</button></div>
+    </div>
+
+    <!-- 取得エクセルの「招待アプリ用ファイル」を読み込む（名前・ファイル名・合言葉。共有のリンクはあとで人ごとに貼る） -->
+    <div class="card">
+      <h2>招待アプリ用ファイルを読み込む</h2>
+      <p class="muted">取得エクセルの［招待アプリ用ファイルを作成］で作ったファイル（evinvite_….json）を選び、受け渡し用のパスワードを入れます。全員分が「リンク未設定」で一覧に入るので、人ごとに共有のリンクを貼って仕上げます。</p>
+      <div class="row"><label class="button">ファイルを選ぶ<input id="importFile" type="file" accept="application/json,.json" hidden></label></div>
+      <p class="muted">合言葉が入っているファイルです。読み込んだら、ドライブやスマホから消してください。</p>
+    </div>
+
+    <!-- 作った招待の一覧 -->
+    <h2 class="sec">招待した人（<span id="invCount">0</span> 人）</h2>
+    <ul id="invList" class="inv-list"></ul>
+
+    <div class="card">
+      <h2>このアプリについて</h2>
+      <p>バージョン：<b id="appVersion"></b></p>
+      <div class="row">
+        <button id="lockBtn" type="button" class="primary">鍵をかける</button>
+        <button id="changePassBtn" type="button">管理用パスワードを変える</button>
+        <button id="updateBtn" type="button">更新を確認</button>
+      </div>
+      <p class="muted">画面を離れて5分たつと、自動で鍵をかけます。</p>
+    </div>
+  </section>
+</main>
+
+<!-- 招待の詳細：招待リンク・招待コード・QR・合言葉 -->
+<dialog id="detailDlg" class="inv-dlg">
+  <h2 id="dName"></h2>
+  <p id="dMeta" class="muted"></p>
+  <!-- リンク未設定のとき：共有のリンクを貼る -->
+  <div id="dPending" hidden>
+    <div class="note">共有のリンクがまだ設定されていません。ドライブで <b id="dPendFile"></b> の共有を「リンクを知っている全員」（閲覧者）にして、［リンクをコピー］したものを貼ってください。</div>
+    <label class="field">共有のリンク<input id="dSrc" autocomplete="off" spellcheck="false" autocapitalize="off" placeholder="https://drive.google.com/file/d/…"></label>
+    <div class="row"><button id="dSetLink" type="button" class="primary">点検して保存</button></div>
+  </div>
+  <div id="dReady">
+    <div id="dQr" class="inv-qr" aria-label="招待の QR コード"></div>
+    <div class="inv-label">招待リンク</div>
+    <p id="dLink" class="mono invite-code"></p>
+    <div class="row"><button id="dCopyLink" type="button" class="primary">リンクをコピー</button></div>
+    <div class="inv-label">招待コード（iPhone でホーム画面のアプリに入れるとき）</div>
+    <p id="dCode" class="mono invite-code"></p>
+    <div class="row"><button id="dCopyCode" type="button">コードをコピー</button></div>
+  </div>
+  <div class="inv-label">合言葉（招待リンクとは別の手段で伝えてください）</div>
+  <p id="dPass" class="mono invite-code">＊＊＊＊＊＊</p>
+  <div class="row"><button id="dShowPass" type="button">表示する</button><button id="dCopyPass" type="button">合言葉をコピー</button></div>
+  <p id="dMsg" class="muted"></p>
+  <div class="row">
+    <button id="dCheck" type="button">もう一度点検</button>
+    <button id="dEdit" type="button">名前・合言葉を変える</button>
+    <button id="dDelete" type="button">この招待を消す</button>
+  </div>
+  <div class="row"><button id="dClose" type="button" class="primary">閉じる</button></div>
+</dialog>
+
+<!-- 招待アプリ用ファイルの受け渡し用のパスワード -->
+<dialog id="tpDlg">
+  <form method="dialog">
+    <h2>受け渡し用のパスワード</h2>
+    <p class="muted">取得エクセルで招待アプリ用ファイルを作ったときに決めたパスワードを入れてください。</p>
+    <p class="muted">人ごとの合言葉とは別のものです（ファイルを運ぶあいだだけ使う鍵です。人ごとの合言葉は変わりません）。</p>
+    <label class="field">パスワード<input id="tpInput" type="password" autocomplete="off" spellcheck="false" autocapitalize="off"></label>
+    <div class="row"><button value="ok" class="primary">読み込む</button><button value="cancel" formnovalidate>やめる</button></div>
+  </form>
+</dialog>
+
+<!-- 名前・合言葉を変える -->
+<dialog id="editDlg">
+  <form method="dialog">
+    <h2>名前・合言葉を変える</h2>
+    <label class="field">名前<input id="eName" maxlength="40" autocomplete="off"></label>
+    <label class="field">合言葉（変えないときは空欄）<input id="ePass" type="password" autocomplete="off" spellcheck="false" autocapitalize="off"></label>
+    <p class="muted">合言葉を変えたときは、ファイルを開けるかを確かめてから保存します。</p>
+    <div class="row"><button value="ok" class="primary">保存</button><button value="cancel" formnovalidate>やめる</button></div>
+  </form>
+</dialog>
+
+<!-- 管理用パスワードを変える -->
+<dialog id="passDlg">
+  <form method="dialog">
+    <h2>管理用パスワードを変える</h2>
+    <label class="field">今のパスワード<input id="cpOld" type="password" autocomplete="current-password" spellcheck="false"></label>
+    <label class="field">新しいパスワード（8文字以上）<input id="cpNew1" type="password" autocomplete="new-password" spellcheck="false"></label>
+    <label class="field">もう一度<input id="cpNew2" type="password" autocomplete="new-password" spellcheck="false"></label>
+    <div class="row"><button value="ok" class="primary">変える</button><button value="cancel" formnovalidate>やめる</button></div>
+  </form>
+</dialog>
+
+<script src="version.js"></script>
+<script src="drive.js"></script>
+<script src="qrcode.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
