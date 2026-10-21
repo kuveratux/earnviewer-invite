@@ -481,9 +481,6 @@ h2.sec-help { display: flex; align-items: center; gap: 8px; }
 /* カードの見出しの右にボタン（インポートデータの［今すぐ確認］） */
 .card-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 6px; }
 .card-head h2 { margin: 0; }
-/* EARN の順位の各行：アドレスと枚数の間に EARN Tier（宝石のバッジ＋名前） */
-.rk-tier { display: inline-flex; align-items: center; gap: 3px; font-size: 12px; color: var(--muted); white-space: nowrap; }
-.rk-tier img { width: 16px; height: 16px; }
 /* EARN Tier のアイコンを文中に（預入期間・資産シミュレーション・EARN 割合の表） */
 .tier-inline { display: inline-flex; align-items: center; gap: 3px; flex-wrap: wrap; justify-content: flex-end; }
 .tier-icon { width: 16px; height: 16px; vertical-align: -3px; margin-right: 3px; }
@@ -497,3 +494,39 @@ h2.sec-help { display: flex; align-items: center; gap: 8px; }
 .sim-ctl-in .rate-now .tier-inline { flex-wrap: nowrap; }
 .sim-ctl-in .seg button { padding: 4px 10px; }
 @media (max-width: 380px) { .sim-ctl-in .seg button { padding: 4px 7px; } .sim-ctl-in .rate-now { font-size: 11px; } .sim-ctl-in { gap: 4px; } }
+/* ランキングの行（1.0.1）：EARN Tier の名前はアドレスの後に、先頭をそろえる。内訳の行は折り返さない（はみ出すときは JS で文字を小さく） */
+.rk-tname { flex: none; width: 5.4em; font-size: 12px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.rank-line .rk-total { flex: none; }
+.rank-line .tier-icon { flex: none; margin-right: 0; }
+.rank-sub { white-space: nowrap; overflow: hidden; }
+.rank-line.earn .cp, .rank-line.earn .rk-name { flex: none; width: 7.4em; }  /* EARN：アドレスの幅をそろえて、EARN Tier の名前の先頭をそろえる */
+.rank-line.earn .rk-total { margin-left: auto; }
+@media (max-width: 380px) { .rank-line.earn .cp, .rank-line.earn .rk-name { width: 6.6em; } .rk-tname { width: 4.8em; font-size: 11px; } .rank-line { gap: 5px; } }
+/* 次の段階までの進み具合（保有枚数の EARN Tier・ランキングの次の順位） */
+.prog { margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--line); }
+.prog-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; font-size: 13px; color: var(--muted); }
+.prog-need { color: var(--text); white-space: nowrap; }
+.prog-bar { margin-top: 6px; height: 8px; border-radius: 4px; background: var(--card-2); border: 1px solid var(--line); overflow: hidden; }
+.prog-bar > span { display: block; height: 100%; background: linear-gradient(90deg, var(--accent-2), var(--accent)); border-radius: 4px; }
+.prog-head .tier-inline { display: inline-flex; align-items: center; white-space: nowrap; flex-wrap: nowrap; }
+.prog-head .tier-nb { display: inline-flex; align-items: center; gap: 3px; color: var(--text); }
+.prog-foot { margin-top: 4px; font-size: 11px; color: var(--muted); text-align: right; }
+/* トークン配分内訳の範囲の切り替え（トークン全体／保有者のみ） */
+.share-scope { display: flex; width: 100%; margin: 4px 0 6px; }
+.share-scope button { flex: 1; padding: 6px 8px; font-size: 13px; }
+.share-note { margin: 0 0 4px; font-size: 12px; }
+/* EARN の一覧の前回からの変化の印（E-03、ESV 2.1.2 と同じ）：印の幅を固定し、印のない行には同じ幅の空き（.rk-chg-ph）を入れる。順位・アドレス・Tier の名前を少し詰めて1行に収める */
+/*   幅は px で固定（アドレスのボタンと自分の行の名前は文字の大きさが違うので、em だとそろわない） */
+.rank-line.earn .rk-no { min-width: 0; width: 27px; flex: none; }
+.rank-line.earn .rk-chg, .rank-line.earn .rk-chg-ph { flex: none; width: 28px; box-sizing: border-box; text-align: center; padding-left: 0; padding-right: 0; }
+.rank-line.earn .cp, .rank-line.earn .rk-name { width: 100px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rank-line.earn .rk-tname { width: 56px; }
+@media (max-width: 380px) { .rank-line.earn { gap: 4px; } .rank-line.earn .cp, .rank-line.earn .rk-name { width: 86px; } .rank-line.earn .rk-tname { width: 46px; } }
+/* 自分の行は枠線が 2px（ほかは 1px）なので、内側の余白を 1px 減らして中身の位置をほかの行とそろえる */
+.ranklist li.rank-row.self { padding: 7px 9px; }
+/* E-08：意図しない拡大だけ止める（2026-10-21 ユーザー決定 B・全アプリ。ESV は E-07 で同じ指定）。指で広げる拡大は残す（viewport の maximum-scale・user-scalable=no は使わない） */
+/*   ダブルタップの拡大を止める（スクロールとピンチの拡大はそのまま。グラフの .ch-wrap は pan-y のまま） */
+html { touch-action: manipulation; }
+/*   入力欄を押したときの iPhone の自動拡大を止める：16px 未満だと拡大されるので、文字を入れる欄・選ぶ欄を 16px に（チェックボックス・色・ファイルなどは対象外）
+     .field select・.filters select など、欄ごとの指定（13px・15px）より必ず優先させるため !important にする */
+input:not([type=checkbox]):not([type=radio]):not([type=color]):not([type=file]):not([type=range]), select, textarea { font-size: 16px !important; }
