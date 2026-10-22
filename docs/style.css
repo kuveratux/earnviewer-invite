@@ -410,6 +410,7 @@ table.grid.sim td.n { text-align: center; }
 .share-table td.num { text-align: center; }
 /* 1.8.2：トークン配分内訳の真ん中の絵文字、表の運営の画像（画像だけのときは少し大きく） */
 .donut-emoji { font-size: 40px; }
+.donut-emoji-s { font-size: 30px; } /* 分類を選んだときは、割合・枚数・件数と並べるので小さめ（E-46） */
 .share-table .share-img { height: 16px; max-width: 48px; vertical-align: -3px; } /* 1.8.3：ほかの Tier の文字の高さに合わせる */
 /* 2026-10：取引タブの折りたたみ（配布先の取引・直近取引）。中身はカードの外に並べる */
 /* 資産額の枠と同じ大きな枠（カード）の中に、見出し（押すと開閉）と中身を入れる */
