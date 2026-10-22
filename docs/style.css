@@ -524,6 +524,13 @@ h2.sec-help { display: flex; align-items: center; gap: 8px; }
 @media (max-width: 380px) { .rank-line.earn { gap: 4px; } .rank-line.earn .cp, .rank-line.earn .rk-name { width: 86px; } .rank-line.earn .rk-tname { width: 46px; } }
 /* 自分の行は枠線が 2px（ほかは 1px）なので、内側の余白を 1px 減らして中身の位置をほかの行とそろえる */
 .ranklist li.rank-row.self { padding: 7px 9px; }
+/* 仕分けの変更（E-35）：区分のタグはボタン（押すと仕分けを選ぶ）。変えた行は「変更（元：…）」 */
+.cls-btn { background: none; border: 0; padding: 0; margin: 0; font: inherit; cursor: pointer; box-shadow: none; }
+.cls-btn .tag::after { content: ' ▾'; font-size: 9px; }
+.cls-chg { font-size: 11px; color: var(--note-text); margin-left: 6px; }
+.cls-list .cls-opt { margin: 10px 0; font-size: 14px; color: var(--text); }
+.cls-list .cls-opt .tag { margin-left: 0; }
+.cls-edit-note { font-size: 12px; margin: 0 0 8px; }
 /* E-08：意図しない拡大だけ止める（2026-10-21 ユーザー決定 B・全アプリ。ESV は E-07 で同じ指定）。指で広げる拡大は残す（viewport の maximum-scale・user-scalable=no は使わない） */
 /*   ダブルタップの拡大を止める（スクロールとピンチの拡大はそのまま。グラフの .ch-wrap は pan-y のまま） */
 html { touch-action: manipulation; }
