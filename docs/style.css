@@ -361,6 +361,8 @@ main { overflow-x: clip; }
 .donut .seg-arc.on { stroke: #fff; }
 .donut-main { fill: var(--text); font-size: 22px; font-weight: 700; }
 .donut-sub { fill: var(--muted); font-size: 11px; }
+.donut-amt { fill: var(--text); font-size: 13px; font-weight: 600; } /* トークン配分内訳の真ん中の枚数（E-40） */
+.donut-name { fill: var(--text); font-size: 12px; }
 .share-table td, .share-table th { white-space: nowrap; }
 .share-table .num { text-align: right; font-variant-numeric: tabular-nums; }
 .share-table tr { cursor: pointer; }
@@ -514,6 +516,7 @@ h2.sec-help { display: flex; align-items: center; gap: 8px; }
 /* トークン配分内訳の範囲の切り替え（トークン全体／保有者のみ） */
 .share-scope { display: flex; width: 100%; margin: 4px 0 6px; }
 .share-scope button { flex: 1; padding: 6px 8px; font-size: 13px; }
+.share-help { display: flex; justify-content: flex-end; margin: 0 0 6px; } /* トークン配分内訳の表の右上の ?（E-40） */
 .share-note { margin: 0 0 4px; font-size: 12px; }
 /* EARN の一覧の前回からの変化の印（E-03、ESV 2.1.2 と同じ）：印の幅を固定し、印のない行には同じ幅の空き（.rk-chg-ph）を入れる。順位・アドレス・Tier の名前を少し詰めて1行に収める */
 /*   幅は px で固定（アドレスのボタンと自分の行の名前は文字の大きさが違うので、em だとそろわない） */
